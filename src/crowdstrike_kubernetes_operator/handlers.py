@@ -1,5 +1,6 @@
 import logging
 from typing import Any, MutableMapping, Optional
+from ruamel import yaml
 
 from cloudformation_cli_python_lib import (
     Action,
@@ -13,10 +14,12 @@ from cloudformation_cli_python_lib import (
 )
 
 from .models import ResourceHandlerRequest, ResourceModel
+from .utils import build_model, encode_id, get_model, handler_init, run_command, stabilize_job
 
 # Use this logger to forward log messages to CloudWatch Logs.
 LOG = logging.getLogger(__name__)
 TYPE_NAME = "CrowdStrike::Kubernetes::Operator"
+LOG.setLevel(logging.DEBUG)
 
 resource = Resource(TYPE_NAME, ResourceModel)
 test_entrypoint = resource.test_entrypoint
@@ -33,6 +36,65 @@ def create_handler(
         status=OperationStatus.IN_PROGRESS,
         resourceModel=model,
     )
+
+    LOG.debug(f"Create invoke \n\n{request.__dict__}\n\n{callback_context}")
+    physical_resource_id, manifest_file, manifest_list = handler_init(
+        model, session, request.logicalResourceIdentifier, request.clientRequestToken
+    )
+    model.CfnId = encode_id(
+        request.clientRequestToken,
+        model.ClusterName,
+        model.Namespace,
+        manifest_list[0]["kind"],
+    )
+    if not callback_context:
+        LOG.debug("1st invoke")
+        progress.callbackDelaySeconds = 1
+        progress.callbackContext = {"init": "complete"}
+        return progress
+    if "stabilizing" in callback_context:
+        if manifest_list[0]["apiVersion"].startswith("batch/") and manifest_list[0]["kind"] == 'Job':
+            if stabilize_job(
+                model.Namespace, callback_context["name"], model.ClusterName, session
+            ):
+                progress.status = OperationStatus.SUCCESS
+            progress.callbackContext = callback_context
+            progress.callbackDelaySeconds = 30
+            LOG.debug(f"stabilizing: {progress.__dict__}")
+            return progress
+
+    try:
+        cmd = f"kubectl create --save-config -o yaml -f {manifest_file}"
+        if model.Namespace:
+            cmd = f"{cmd} -n {model.Namespace}"
+        outp = run_command(
+            cmd,
+            model.ClusterName,
+            session,
+        )
+        build_model(list(yaml.safe_load_all(outp)), model)
+    except Exception as e:
+        if "Error from server (AlreadyExists)" not in str(e):
+            raise
+        LOG.debug("checking whether this is a duplicate request....")
+        if not get_model(model, session):
+            raise exceptions.AlreadyExists(TYPE_NAME, model.CfnId)
+    if not model.Uid:
+        # this is a multi-part resource, still need to work out stabilization for this
+        pass
+    elif manifest_list[0]["apiVersion"].startswith("batch/") and manifest_list[0]["kind"] == 'Job':
+        callback_context["stabilizing"] = model.Uid
+        callback_context["name"] = model.Name
+        progress.callbackContext = callback_context
+        progress.callbackDelaySeconds = 30
+        LOG.debug(f"need to stabilize: {progress.__dict__}")
+        return progress
+    progress.status = OperationStatus.SUCCESS
+    LOG.debug(f"success {progress.__dict__}")
+    return progress
+
+
+def delme():
     # TODO: put code here
 
     # Example:

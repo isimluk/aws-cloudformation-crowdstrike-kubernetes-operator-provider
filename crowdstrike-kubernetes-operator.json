@@ -110,27 +110,92 @@
     "handlers": {
         "create": {
             "permissions": [
-                "initech:CreateReport"
+                "ssm:GetParameter",
+                "eks:DescribeCluster",
+                "ec2:DescribeSubnets",
+                "ec2:DescribeSecurityGroups",
+                "ec2:DescribeVpcs",
+                "ec2:CreateNetworkInterface",
+                "ec2:DeleteNetworkInterface",
+                "sts:GetCallerIdentity",
+                "s3:GetObject",
+                "lambda:CreateFunction",
+                "lambda:UpdateFunctionConfiguration",
+                "lambda:UpdateFunctionCode",
+                "lambda:InvokeFunction",
+                "iam:PassRole"
             ]
         },
         "read": {
             "permissions": [
-                "initech:DescribeReport"
+                "ssm:GetParameter",
+                "eks:DescribeCluster",
+                "ec2:DescribeSubnets",
+                "ec2:DescribeSecurityGroups",
+                "ec2:DescribeVpcs",
+                "ec2:CreateNetworkInterface",
+                "ec2:DeleteNetworkInterface",
+                "sts:GetCallerIdentity",
+                "s3:GetObject",
+                "lambda:CreateFunction",
+                "lambda:UpdateFunctionConfiguration",
+                "lambda:UpdateFunctionCode",
+                "lambda:InvokeFunction",
+                "iam:PassRole"
             ]
         },
         "update": {
             "permissions": [
-                "initech:UpdateReport"
+                "ssm:GetParameter",
+                "eks:DescribeCluster",
+                "ec2:DescribeSubnets",
+                "ec2:DescribeSecurityGroups",
+                "ec2:DescribeVpcs",
+                "ec2:CreateNetworkInterface",
+                "ec2:DeleteNetworkInterface",
+                "sts:GetCallerIdentity",
+                "s3:GetObject",
+                "lambda:CreateFunction",
+                "lambda:UpdateFunctionConfiguration",
+                "lambda:UpdateFunctionCode",
+                "lambda:InvokeFunction",
+                "iam:PassRole"
             ]
         },
         "delete": {
             "permissions": [
-                "initech:DeleteReport"
+                "ssm:GetParameter",
+                "eks:DescribeCluster",
+                "ec2:DescribeSubnets",
+                "ec2:DescribeSecurityGroups",
+                "ec2:DescribeVpcs",
+                "ec2:CreateNetworkInterface",
+                "ec2:DeleteNetworkInterface",
+                "sts:GetCallerIdentity",
+                "s3:GetObject",
+                "lambda:CreateFunction",
+                "lambda:UpdateFunctionConfiguration",
+                "lambda:UpdateFunctionCode",
+                "lambda:InvokeFunction",
+                "iam:PassRole"
             ]
         },
         "list": {
             "permissions": [
-                "initech:ListReports"
+                "ssm:GetParameter",
+                "eks:DescribeCluster",
+                "ec2:DescribeSubnets",
+                "ec2:DescribeSecurityGroups",
+                "ec2:DescribeVpcs",
+                "ec2:CreateNetworkInterface",
+                "ec2:DeleteNetworkInterface",
+                "sts:GetCallerIdentity",
+                "s3:GetObject",
+                "lambda:CreateFunction",
+                "lambda:UpdateFunctionConfiguration",
+                "lambda:UpdateFunctionCode",
+                "lambda:InvokeFunction",
+                "iam:PassRole"
             ]
         }
     }
