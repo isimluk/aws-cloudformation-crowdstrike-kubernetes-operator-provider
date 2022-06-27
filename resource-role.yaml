@@ -30,11 +30,20 @@ Resources:
             Statement:
               - Effect: Allow
                 Action:
-                - "initech:CreateReport"
-                - "initech:DeleteReport"
-                - "initech:DescribeReport"
-                - "initech:ListReports"
-                - "initech:UpdateReport"
+                - "ec2:CreateNetworkInterface"
+                - "ec2:DeleteNetworkInterface"
+                - "ec2:DescribeSecurityGroups"
+                - "ec2:DescribeSubnets"
+                - "ec2:DescribeVpcs"
+                - "eks:DescribeCluster"
+                - "iam:PassRole"
+                - "lambda:CreateFunction"
+                - "lambda:InvokeFunction"
+                - "lambda:UpdateFunctionCode"
+                - "lambda:UpdateFunctionConfiguration"
+                - "s3:GetObject"
+                - "ssm:GetParameter"
+                - "sts:GetCallerIdentity"
                 Resource: "*"
 Outputs:
   ExecutionRoleArn:
