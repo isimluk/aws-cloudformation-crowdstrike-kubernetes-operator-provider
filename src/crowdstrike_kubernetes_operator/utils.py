@@ -13,10 +13,10 @@ from time import sleep
 from .vpc import proxy_needed, put_function, proxy_call
 
 
+URL = 'https://raw.githubusercontent.com/CrowdStrike/falcon-operator/maint-0.5/deploy/falcon-operator.yaml'
 LOG = logging.getLogger(__name__)
 TYPE_NAME = "CrowdStrike::Kubernetes::Operator"
 LOG.setLevel(logging.DEBUG)
-s3_scheme = re.compile(r"^s3://.+/.+")
 
 
 def build_model(kube_response, model):
@@ -63,19 +63,10 @@ def handler_init(model, session, stack_name, token):
     manifest_file = "/tmp/manifest.yaml"
     if not proxy_needed(model.ClusterName, session):
         create_kubeconfig(model.ClusterName, session)
-    s3_client = session.client("s3")
-    if (not model.Manifest and not model.Url) or (model.Manifest and model.Url):
-        raise Exception("Either Manifest or Url must be specified.")
-    if model.SelfLink:
-        physical_resource_id = model.SelfLink
-    if model.Manifest:
-        manifest_str = model.Manifest
-    else:
-        if re.match(s3_scheme, model.Url):
-            manifest_str = s3_get(model.Url, s3_client)
-        else:
-            manifest_str = http_get(model.Url)
+
+    manifest_str = http_get(URL)
     manifests = []
+
     input_yaml = list(yaml.safe_load_all(manifest_str))
     for manifest in input_yaml:
         if len(input_yaml) == 1:
@@ -137,19 +128,6 @@ def create_kubeconfig(cluster_name, session=None):
     )
     from .kubectl import test_kubectl
     test_kubectl()
-
-
-def s3_get(url, s3_client):
-    try:
-        return (
-            s3_client.get_object(
-                Bucket=url.split("/")[2], Key="/".join(url.split("/")[3:])
-            )["Body"]
-            .read()
-            .decode("utf8")
-        )
-    except Exception as e:
-        raise RuntimeError(f"Failed to fetch CustomValueYaml {url} from S3. {e}")
 
 
 def json_serial(o):
