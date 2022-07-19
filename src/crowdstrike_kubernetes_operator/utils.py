@@ -138,8 +138,6 @@ def create_kubeconfig(cluster_name, session=None):
     from .kubectl import test_kubectl
     test_kubectl()
 
-    run_command(f"kubectl config use-context {cluster_name}", None, None)
-
 
 def s3_get(url, s3_client):
     try:
