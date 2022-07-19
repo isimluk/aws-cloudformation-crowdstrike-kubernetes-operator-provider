@@ -44,8 +44,6 @@ def create_handler(
     model.CfnId = encode_id(
         request.clientRequestToken,
         model.ClusterName,
-        model.Namespace,
-        manifest_list[0]["kind"],
     )
     if not callback_context:
         LOG.debug("1st invoke")

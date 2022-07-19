@@ -28,9 +28,9 @@ def build_model(kube_response, model):
                 )
 
 
-def encode_id(client_token, cluster_name, namespace, kind):
+def encode_id(client_token, cluster_name):
     return base64.b64encode(
-        f"{client_token}|{cluster_name}|{namespace}|{kind}".encode("utf-8")
+        f"{client_token}|{cluster_name}".encode("utf-8")
     ).decode("utf-8")
 
 
@@ -40,7 +40,7 @@ def decode_id(encoded_id):
 
 
 def get_model(model, session):
-    token, cluster, namespace, kind = decode_id(model.CfnId)
+    token, cluster = decode_id(model.CfnId)
     cmd = f"kubectl get {kind} -o yaml"
     if namespace:
         cmd = f"{cmd} -n {namespace}"
