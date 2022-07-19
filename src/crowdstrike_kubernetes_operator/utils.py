@@ -10,16 +10,13 @@ from datetime import datetime, date
 from cloudformation_cli_python_lib import exceptions
 from ruamel import yaml
 from time import sleep
+from .vpc import proxy_needed, put_function, proxy_call
 
 
 LOG = logging.getLogger(__name__)
 TYPE_NAME = "CrowdStrike::Kubernetes::Operator"
 LOG.setLevel(logging.DEBUG)
 s3_scheme = re.compile(r"^s3://.+/.+")
-
-
-def proxy_needed(*args, **kwargs):
-    return False
 
 
 def build_model(kube_response, model):
@@ -127,6 +124,7 @@ def create_kubeconfig(cluster_name, session=None):
     os.environ["PATH"] = f"/var/task/bin:{os.environ['PATH']}"
     os.environ["PYTHONPATH"] = f"/var/task:{os.environ.get('PYTHONPATH', '')}"
     os.environ["KUBECONFIG"] = "/tmp/kube.config"
+    os.environ["KUBE_CONFIG_DEFAULT_LOCATION"] = "/tmp/kube.config"
     if session:
         creds = session.client.__self__.get_credentials()
         os.environ["AWS_ACCESS_KEY_ID"] = creds.access_key
@@ -137,6 +135,9 @@ def create_kubeconfig(cluster_name, session=None):
         None,
         None,
     )
+    from .kubectl import test_kubectl
+    test_kubectl()
+
     run_command(f"kubectl config use-context {cluster_name}", None, None)
 
 
