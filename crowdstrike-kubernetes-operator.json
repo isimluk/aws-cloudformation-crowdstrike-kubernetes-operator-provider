@@ -6,11 +6,18 @@
         "ClusterName": {
             "description": "Name of the EKS cluster",
             "type": "string"
+        },
+        "CfnId": {
+            "type":"string",
+            "description": "CloudFormation Physical ID."
         }
     },
     "additionalProperties": false,
     "required": [
         "ClusterName"
+    ],
+    "readOnlyProperties": [
+        "/properties/CfnId"
     ],
     "createOnlyProperties": [
         "/properties/ClusterName"

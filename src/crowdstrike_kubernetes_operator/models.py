@@ -41,6 +41,7 @@ class ResourceHandlerRequest(BaseResourceHandlerRequest):
 @dataclass
 class ResourceModel(BaseModel):
     ClusterName: Optional[str]
+    CfnId: Optional[str]
 
     @classmethod
     def _deserialize(
@@ -53,6 +54,7 @@ class ResourceModel(BaseModel):
         recast_object(cls, json_data, dataclasses)
         return cls(
             ClusterName=json_data.get("ClusterName"),
+            CfnId=json_data.get("CfnId"),
         )
 
 
