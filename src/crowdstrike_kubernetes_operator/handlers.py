@@ -39,7 +39,7 @@ def create_handler(
     )
 
     LOG.debug(f"Create invoke \n\n{request.__dict__}\n\n{callback_context}")
-    physical_resource_id, manifest_file, manifest_list = handler_init(
+    physical_resource_id, _, manifest_list = handler_init(
         model, session, request.logicalResourceIdentifier, request.clientRequestToken
     )
     model.CfnId = encode_id(
@@ -63,8 +63,9 @@ def create_handler(
             return progress
 
     try:
-        ret = kubectl.apply()
-        LOG.debug(f"Apply returned: {ret}")
+        for manifest in manifest_list:
+            ret = kubectl.apply(manifest)
+            LOG.debug(f"Apply returned: {ret}")
 
         build_model(list(yaml.safe_load_all(outp)), model)
     except Exception as e:
@@ -151,16 +152,17 @@ def delete_handler(
     if not model:
         return progress
 
-    if not model.CfnId:
-        raise exceptions.InvalidRequest("CfnId is required.")
+    if not model.ClusterName:
+        raise exceptions.InvalidRequest("ClusterName is required.")
+
+    physical_resource_id, manifest_file, manifest_list = handler_init(
+        model, session, request.logicalResourceIdentifier, request.clientRequestToken
+    )
 
     LOG.debug(f"physical_resource_id\n{physical_resource_id}")
     LOG.debug(f"manifest_list\n{manifest_list}")
     # TODO
 
-    physical_resource_id, manifest_file, manifest_list = handler_init(
-        model, session, request.logicalResourceIdentifier, request.clientRequestToken
-    )
 
 
     return progress

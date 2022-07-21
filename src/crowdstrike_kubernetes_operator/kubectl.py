@@ -11,41 +11,30 @@ LOG.setLevel(logging.DEBUG)
 
 
 def login(cluster_name, session=None):
+    kubeconfig_location = '/tmp/kube.config'
     os.environ["PATH"] = f"/var/task/bin:{os.environ['PATH']}"
     os.environ["PYTHONPATH"] = f"/var/task:{os.environ.get('PYTHONPATH', '')}"
-    os.environ["KUBECONFIG"] = "/tmp/kube.config"
-    os.environ["KUBE_CONFIG_DEFAULT_LOCATION"] = "/tmp/kube.config"
     if session:
         creds = session.client.__self__.get_credentials()
         os.environ["AWS_ACCESS_KEY_ID"] = creds.access_key
         os.environ["AWS_SECRET_ACCESS_KEY"] = creds.secret_key
         os.environ["AWS_SESSION_TOKEN"] = creds.token
     run_command(
-        f"aws eks update-kubeconfig --name {cluster_name} --alias {cluster_name} --kubeconfig /tmp/kube.config",
+        f"aws eks update-kubeconfig --name {cluster_name} --alias {cluster_name} --kubeconfig {kubeconfig_location}",
         None,
         None,
     )
-    config.load_kube_config(config_file='/tmp/kube.config')
+    config.load_kube_config(config_file=kubeconfig_location)
 
 
 def test():
-    try:
-        # Configs can be set in Configuration class directly or using helper utility
-        config.load_kube_config()
-        v1 = client.CoreV1Api()
-        LOG.debug("Listing pods with their IPs:")
-        ret = v1.list_pod_for_all_namespaces(watch=False)
-        for i in ret.items:
-            LOG.debug("%s\t%s\t%s" % (i.status.pod_ip, i.metadata.namespace, i.metadata.name))
-    except Exception as e:
-        LOG.debug(f"exception: {e}")
-        LOG.debug(f"env: {os.env}")
-        v = os.environ['KUBECONFIG']
-        v = os.environ['KUBE_CONFIG_DEFAULT_LOCATION']
-        LOG.debug(f"env: {os.env}")
-
-        LOG.debug($(cat $KUBE_CONFIG_DEFAULT_LOCATION))
-
+    # Configs can be set in Configuration class directly or using helper utility
+    # config.load_kube_config()
+    v1 = client.CoreV1Api()
+    LOG.debug("Listing pods with their IPs:")
+    ret = v1.list_pod_for_all_namespaces(watch=False)
+    for i in ret.items:
+        LOG.debug("%s\t%s\t%s" % (i.status.pod_ip, i.metadata.namespace, i.metadata.name))
 
 
 def apply(manifest):
