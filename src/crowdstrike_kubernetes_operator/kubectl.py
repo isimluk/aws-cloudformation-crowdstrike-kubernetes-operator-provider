@@ -3,13 +3,14 @@ import os
 import re
 import yaml
 from kubernetes import client, config, utils
+from .utils import run_command
 
 LOG = logging.getLogger(__name__)
 TYPE_NAME = "CrowdStrike::Kubernetes::Operator"
 LOG.setLevel(logging.DEBUG)
 
 
-def login(cluster_name):
+def login(cluster_name, session=None):
     os.environ["PATH"] = f"/var/task/bin:{os.environ['PATH']}"
     os.environ["PYTHONPATH"] = f"/var/task:{os.environ.get('PYTHONPATH', '')}"
     os.environ["KUBECONFIG"] = "/tmp/kube.config"
@@ -24,8 +25,7 @@ def login(cluster_name):
         None,
         None,
     )
-    from . import kubectl
-    kubectl.test()
+
 
 def test():
     # Configs can be set in Configuration class directly or using helper utility

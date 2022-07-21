@@ -62,7 +62,9 @@ def handler_init(model, session, stack_name, token):
     physical_resource_id = None
     manifest_file = "/tmp/manifest.yaml"
     if not proxy_needed(model.ClusterName, session):
-        create_kubeconfig(model.ClusterName, session)
+        from . import kubectl
+        kubectl.login(model.ClusterName, session)
+        kubectl.test()
 
     manifest_str = http_get(URL)
     manifests = []
@@ -109,25 +111,6 @@ def run_command(command, cluster_name, session):
             LOG.debug("{}, retrying in 5 seconds".format(e))
             sleep(5)
             retries += 1
-
-
-def create_kubeconfig(cluster_name, session=None):
-    os.environ["PATH"] = f"/var/task/bin:{os.environ['PATH']}"
-    os.environ["PYTHONPATH"] = f"/var/task:{os.environ.get('PYTHONPATH', '')}"
-    os.environ["KUBECONFIG"] = "/tmp/kube.config"
-    os.environ["KUBE_CONFIG_DEFAULT_LOCATION"] = "/tmp/kube.config"
-    if session:
-        creds = session.client.__self__.get_credentials()
-        os.environ["AWS_ACCESS_KEY_ID"] = creds.access_key
-        os.environ["AWS_SECRET_ACCESS_KEY"] = creds.secret_key
-        os.environ["AWS_SESSION_TOKEN"] = creds.token
-    run_command(
-        f"aws eks update-kubeconfig --name {cluster_name} --alias {cluster_name} --kubeconfig /tmp/kube.config",
-        None,
-        None,
-    )
-    from .kubectl import test_kubectl
-    test_kubectl()
 
 
 def json_serial(o):
