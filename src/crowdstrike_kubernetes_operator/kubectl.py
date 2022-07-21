@@ -25,16 +25,27 @@ def login(cluster_name, session=None):
         None,
         None,
     )
+    config.load_kube_config(config_file='/tmp/kube.config')
 
 
 def test():
-    # Configs can be set in Configuration class directly or using helper utility
-    config.load_kube_config()
-    v1 = client.CoreV1Api()
-    LOG.debug("Listing pods with their IPs:")
-    ret = v1.list_pod_for_all_namespaces(watch=False)
-    for i in ret.items:
-        LOG.debug("%s\t%s\t%s" % (i.status.pod_ip, i.metadata.namespace, i.metadata.name))
+    try:
+        # Configs can be set in Configuration class directly or using helper utility
+        config.load_kube_config()
+        v1 = client.CoreV1Api()
+        LOG.debug("Listing pods with their IPs:")
+        ret = v1.list_pod_for_all_namespaces(watch=False)
+        for i in ret.items:
+            LOG.debug("%s\t%s\t%s" % (i.status.pod_ip, i.metadata.namespace, i.metadata.name))
+    except Exception as e:
+        LOG.debug(f"exception: {e}")
+        LOG.debug(f"env: {os.env}")
+        v = os.environ['KUBECONFIG']
+        v = os.environ['KUBE_CONFIG_DEFAULT_LOCATION']
+        LOG.debug(f"env: {os.env}")
+
+        LOG.debug($(cat $KUBE_CONFIG_DEFAULT_LOCATION))
+
 
 
 def apply(manifest):
