@@ -15,6 +15,7 @@ from cloudformation_cli_python_lib import (
 
 from .models import ResourceHandlerRequest, ResourceModel
 from .utils import build_model, encode_id, get_model, handler_init, run_command, stabilize_job
+from . import kubectl
 
 # Use this logger to forward log messages to CloudWatch Logs.
 LOG = logging.getLogger(__name__)
@@ -62,14 +63,9 @@ def create_handler(
             return progress
 
     try:
-        cmd = f"kubectl create --save-config -o yaml -f {manifest_file}"
-        if model.Namespace:
-            cmd = f"{cmd} -n {model.Namespace}"
-        outp = run_command(
-            cmd,
-            model.ClusterName,
-            session,
-        )
+        ret = kubectl.apply()
+        LOG.debug(f"Apply returned: {ret}")
+
         build_model(list(yaml.safe_load_all(outp)), model)
     except Exception as e:
         if "Error from server (AlreadyExists)" not in str(e):
@@ -134,6 +130,7 @@ def update_handler(
         status=OperationStatus.IN_PROGRESS,
         resourceModel=model,
     )
+    LOG.debug(f"Update invoke \n\n{request.__dict__}\n\n{callback_context}")
     # TODO: put code here
     return read_handler(session, request, callback_context)
 
@@ -145,11 +142,27 @@ def delete_handler(
     callback_context: MutableMapping[str, Any],
 ) -> ProgressEvent:
     model = request.desiredResourceState
+
     progress: ProgressEvent = ProgressEvent(
-        status=OperationStatus.IN_PROGRESS,
+        status=OperationStatus.SUCCESS,
         resourceModel=None,
     )
-    # TODO: put code here
+    LOG.debug(f"Delete invoke \n\n{request.__dict__}\n\n{callback_context}")
+    if not model:
+        return progress
+
+    if not model.CfnId:
+        raise exceptions.InvalidRequest("CfnId is required.")
+
+    LOG.debug(f"physical_resource_id\n{physical_resource_id}")
+    LOG.debug(f"manifest_list\n{manifest_list}")
+    # TODO
+
+    physical_resource_id, manifest_file, manifest_list = handler_init(
+        model, session, request.logicalResourceIdentifier, request.clientRequestToken
+    )
+
+
     return progress
 
 
@@ -160,6 +173,7 @@ def read_handler(
     callback_context: MutableMapping[str, Any],
 ) -> ProgressEvent:
     model = request.desiredResourceState
+    LOG.debug(f"Read invoke \n\n{request.__dict__}\n\n{callback_context}")
     # TODO: put code here
     return ProgressEvent(
         status=OperationStatus.SUCCESS,
@@ -173,6 +187,7 @@ def list_handler(
     request: ResourceHandlerRequest,
     callback_context: MutableMapping[str, Any],
 ) -> ProgressEvent:
+    LOG.debug(f"List invoke \n\n{request.__dict__}\n\n{callback_context}")
     # TODO: put code here
     return ProgressEvent(
         status=OperationStatus.SUCCESS,
