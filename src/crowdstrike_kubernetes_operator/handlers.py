@@ -161,7 +161,7 @@ def delete_handler(
         model, session, request.logicalResourceIdentifier, request.clientRequestToken
     )
 
-    LOG.debug(f"manifest_list\n{manifest_list}")
+    LOG.debug(f"manifest_list: {manifest_list}")
     kubectl.delete(manifest_list)
 
     return progress

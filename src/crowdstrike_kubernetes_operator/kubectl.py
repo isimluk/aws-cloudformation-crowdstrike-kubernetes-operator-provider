@@ -45,6 +45,9 @@ def apply(manifests):
 def delete(manifests):
     k8s_client = client.ApiClient()
     # delete_from_yaml(k8s_client, manifest)
+    LOG.debug(f"manifests: {manifests}")
+    LOG.debug(f"manifests class: {manifests.__class__}")
+    LOG.debug(f"manifetts length: {len(manifests)}")
     for manifest in manifests.reverse():
         LOG.debug(f"deleting manifest: {manifest}")
         delete_from_dict(k8s_client, manifest, verbose=True)
