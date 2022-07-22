@@ -15,7 +15,7 @@ from cloudformation_cli_python_lib import (
 )
 
 from .models import ResourceHandlerRequest, ResourceModel
-from .utils import build_model, encode_id, get_model, handler_init, run_command, stabilize_job
+from .utils import encode_id, get_model, handler_init, run_command, stabilize_job
 from . import kubectl
 
 # Use this logger to forward log messages to CloudWatch Logs.
@@ -52,23 +52,10 @@ def create_handler(
         progress.callbackDelaySeconds = 1
         progress.callbackContext = {"init": "complete"}
         return progress
-    if "stabilizing" in callback_context:
-        if manifest_list[0]["apiVersion"].startswith("batch/") and manifest_list[0]["kind"] == 'Job':
-            if stabilize_job(
-                model.Namespace, callback_context["name"], model.ClusterName, session
-            ):
-                progress.status = OperationStatus.SUCCESS
-            progress.callbackContext = callback_context
-            progress.callbackDelaySeconds = 30
-            LOG.debug(f"stabilizing: {progress.__dict__}")
-            return progress
 
     try:
-        ret = kubectl.apply(manifest_list)
+        kubectl.apply(manifest_list)
         LOG.debug(f"Apply returned: {ret.__class__}")
-
-        build_model(list(yaml.safe_load_all(outp)), model)
-
     except kubernetes.utils.FailToCreateError as e:
         LOG.debug("FAILED TO CREATE KUBERNETES ERROR")
         LOG.debug(f"exception caught class: {e.__class__}")
@@ -84,16 +71,7 @@ def create_handler(
         LOG.debug("checking whether this is a duplicate request....")
         if not get_model(model, session):
             raise exceptions.AlreadyExists(TYPE_NAME, model.CfnId)
-    if not model.Uid:
-        # this is a multi-part resource, still need to work out stabilization for this
-        pass
-    elif manifest_list[0]["apiVersion"].startswith("batch/") and manifest_list[0]["kind"] == 'Job':
-        callback_context["stabilizing"] = model.Uid
-        callback_context["name"] = model.Name
-        progress.callbackContext = callback_context
-        progress.callbackDelaySeconds = 30
-        LOG.debug(f"need to stabilize: {progress.__dict__}")
-        return progress
+
     progress.status = OperationStatus.SUCCESS
     LOG.debug(f"success {progress.__dict__}")
     return progress
@@ -169,7 +147,6 @@ def delete_handler(
         model, session, request.logicalResourceIdentifier, request.clientRequestToken
     )
 
-    LOG.debug(f"manifest_list: {manifest_list}")
     kubectl.delete(manifest_list)
 
     return progress
