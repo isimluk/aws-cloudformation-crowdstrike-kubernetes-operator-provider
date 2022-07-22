@@ -28,13 +28,10 @@ def login(cluster_name, session=None):
 
 
 def test():
-    # Configs can be set in Configuration class directly or using helper utility
-    # config.load_kube_config()
     v1 = client.CoreV1Api()
-    LOG.debug("Listing pods with their IPs:")
     ret = v1.list_pod_for_all_namespaces(watch=False)
     for i in ret.items:
-        LOG.debug("%s\t%s\t%s" % (i.status.pod_ip, i.metadata.namespace, i.metadata.name))
+        break
 
 
 def apply(manifests):
@@ -43,10 +40,8 @@ def apply(manifests):
 
 
 def delete(manifests):
+    # TODO: delete sensors first
     k8s_client = client.ApiClient()
-    # delete_from_yaml(k8s_client, manifest)
-    LOG.debug(f"manifests: {manifests}")
-    LOG.debug(f"manifests class: {manifests.__class__}")
     for manifest in reversed(manifests):
         LOG.debug(f"deleting manifest: {manifest}")
         delete_from_dict(k8s_client, manifest, verbose=True)
