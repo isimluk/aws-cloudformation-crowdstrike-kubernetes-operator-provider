@@ -1,4 +1,5 @@
 import logging
+import kubernetes
 from typing import Any, MutableMapping, Optional
 from ruamel import yaml
 
@@ -67,6 +68,13 @@ def create_handler(
         LOG.debug(f"Apply returned: {ret.__class__}")
 
         build_model(list(yaml.safe_load_all(outp)), model)
+
+    except kubernetes.utils.create_from_yaml.FailToCreateError as e:
+        LOG.debug("FAILED TO CREATE KUBERNETES ERROR")
+        LOG.debug(f"exception caught class: {e.__class__}")
+        LOG.debug(f"exception caught: {e}")
+        raise e
+
     except Exception as e:
         LOG.debug(f"exception caught class: {e.__class__}")
         LOG.debug(f"exception caught: {e}")
