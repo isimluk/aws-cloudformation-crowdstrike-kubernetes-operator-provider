@@ -55,7 +55,6 @@ def create_handler(
 
     try:
         kubectl.apply(manifest_list)
-        LOG.debug(f"Apply returned: {ret.__class__}")
     except kubernetes.utils.FailToCreateError as e:
         LOG.debug("FAILED TO CREATE KUBERNETES ERROR")
         LOG.debug(f"exception caught class: {e.__class__}")
