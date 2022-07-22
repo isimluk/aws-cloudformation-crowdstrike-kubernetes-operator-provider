@@ -42,9 +42,12 @@ def apply(manifests):
     return utils.create_from_yaml(k8s_client, yaml_objects=manifests)
 
 
-def delete(manifest):
+def delete(manifests):
     k8s_client = client.ApiClient()
-    delete_from_yaml(k8s_client, manifest)
+    # delete_from_yaml(k8s_client, manifest)
+    for manifest in manifests.reverse():
+        LOG.debug(f"deleting manifest: {manifest}")
+        delete_from_dict(k8s_client, manifest, verbose=True)
 
 
 def delete_from_yaml(k8s_client, yaml_content, verbose=False,

@@ -68,6 +68,9 @@ def create_handler(
 
         build_model(list(yaml.safe_load_all(outp)), model)
     except Exception as e:
+        LOG.debug(f"exception caught class: {e.__class__}")
+        LOG.debug(f"exception caught: {e}")
+
         if "Error from server (AlreadyExists)" not in str(e):
             raise
         LOG.debug("checking whether this is a duplicate request....")
@@ -154,15 +157,12 @@ def delete_handler(
     if not model.ClusterName:
         raise exceptions.InvalidRequest("ClusterName is required.")
 
-    physical_resource_id, manifest_file, manifest_list = handler_init(
+    physical_resource_id, _, manifest_list = handler_init(
         model, session, request.logicalResourceIdentifier, request.clientRequestToken
     )
 
-    LOG.debug(f"physical_resource_id\n{physical_resource_id}")
     LOG.debug(f"manifest_list\n{manifest_list}")
-    # TODO
-
-
+    kubectl.delete(manifest_list)
 
     return progress
 
