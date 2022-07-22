@@ -37,14 +37,12 @@ def test():
         LOG.debug("%s\t%s\t%s" % (i.status.pod_ip, i.metadata.namespace, i.metadata.name))
 
 
-def apply(manifest):
-    config.load_kube_config()
+def apply(manifests):
     k8s_client = client.ApiClient()
-    return utils.create_from_yaml(k8s_client, manifest)
+    return utils.create_from_yaml(k8s_client, yaml_objects=manifests)
 
 
 def delete(manifest):
-    config.load_kube_config()
     k8s_client = client.ApiClient()
     delete_from_yaml(k8s_client, manifest)
 

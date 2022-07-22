@@ -63,9 +63,8 @@ def create_handler(
             return progress
 
     try:
-        for manifest in manifest_list:
-            ret = kubectl.apply(manifest)
-            LOG.debug(f"Apply returned: {ret}")
+        ret = kubectl.apply(manifest_list)
+        LOG.debug(f"Apply returned: {ret.__class__}")
 
         build_model(list(yaml.safe_load_all(outp)), model)
     except Exception as e:
