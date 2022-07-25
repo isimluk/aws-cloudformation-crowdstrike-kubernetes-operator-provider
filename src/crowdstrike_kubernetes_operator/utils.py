@@ -1,10 +1,8 @@
 import base64
 import logging
-import json
 import requests
 import shlex
 import subprocess
-from datetime import datetime, date
 from ruamel import yaml
 from time import sleep
 
@@ -22,8 +20,6 @@ def encode_id(client_token, cluster_name):
 
 
 def handler_init(model, session, stack_name, token):
-    physical_resource_id = None
-
     from . import kubectl
     kubectl.login(model.ClusterName, session)
     kubectl.test()
