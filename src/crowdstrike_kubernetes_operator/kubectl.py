@@ -88,6 +88,7 @@ def delete_from_dict(k8s_client, yml_document, verbose,
     if api_exceptions:
         raise FailToDeleteError(api_exceptions)
 
+
 def delete_from_yaml_single_item(k8s_client,
                                  yml_document, verbose=False, **kwargs):
     # get group and version from apiVersion

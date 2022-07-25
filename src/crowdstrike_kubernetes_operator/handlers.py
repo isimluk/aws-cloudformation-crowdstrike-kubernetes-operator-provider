@@ -1,7 +1,6 @@
 import logging
 import kubernetes.utils
 from typing import Any, MutableMapping, Optional
-from ruamel import yaml
 
 from cloudformation_cli_python_lib import (
     Action,
