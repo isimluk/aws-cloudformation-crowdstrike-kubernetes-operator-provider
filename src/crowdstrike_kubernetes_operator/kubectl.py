@@ -11,7 +11,7 @@ LOG.setLevel(logging.DEBUG)
 
 
 def login(cluster_name, session=None):
-    kubeconfig_location = '/tmp/kube.config'
+    kubeconfig_location = '.kube.config'
     os.environ["PATH"] = f"/var/task/bin:{os.environ['PATH']}"
     os.environ["PYTHONPATH"] = f"/var/task:{os.environ.get('PYTHONPATH', '')}"
     if session:
