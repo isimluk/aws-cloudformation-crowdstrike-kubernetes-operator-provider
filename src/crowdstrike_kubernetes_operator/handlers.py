@@ -12,7 +12,7 @@ from cloudformation_cli_python_lib import (
 )
 
 from .models import ResourceHandlerRequest, ResourceModel
-from .utils import encode_id, get_model, handler_init
+from .utils import encode_id, handler_init
 from . import kubectl
 
 # Use this logger to forward log messages to CloudWatch Logs.
@@ -56,6 +56,7 @@ def create_handler(
         LOG.debug("FAILED TO CREATE KUBERNETES ERROR")
         LOG.debug(f"exception caught class: {e.__class__}")
         LOG.debug(f"exception caught: {e}")
+        # raise exceptions.AlreadyExists(TYPE_NAME, model.CfnId)
         raise e
 
     except Exception as e:
@@ -65,8 +66,6 @@ def create_handler(
         if "Error from server (AlreadyExists)" not in str(e):
             raise
         LOG.debug("checking whether this is a duplicate request....")
-        if not get_model(model, session):
-            raise exceptions.AlreadyExists(TYPE_NAME, model.CfnId)
 
     progress.status = OperationStatus.SUCCESS
     LOG.debug(f"success {progress.__dict__}")

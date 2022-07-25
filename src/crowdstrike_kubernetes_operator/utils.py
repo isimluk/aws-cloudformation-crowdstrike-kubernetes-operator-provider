@@ -34,21 +34,6 @@ def decode_id(encoded_id):
     return tuple(base64.b64decode(encoded_id).decode("utf-8").split("|"))
 
 
-def get_model(model, session):
-    token, cluster = decode_id(model.CfnId)
-    cmd = f"kubectl get {kind} -o yaml"
-    if namespace:
-        cmd = f"{cmd} -n {namespace}"
-    outp = run_command(cmd, cluster, session)
-    for i in yaml.safe_load(outp)["items"]:
-        if token == i.get("metadata", {}).get("annotations", {}).get(
-            "cfn-client-token"
-        ):
-            build_model([i], model)
-            return model
-    return None
-
-
 def handler_init(model, session, stack_name, token):
     LOG.debug(
         "Received model: %s" % json.dumps(model._serialize(), default=json_serial)
