@@ -7,7 +7,6 @@ import subprocess
 from datetime import datetime, date
 from ruamel import yaml
 from time import sleep
-from .vpc import proxy_needed, put_function, proxy_call
 
 
 URL = 'https://raw.githubusercontent.com/CrowdStrike/falcon-operator/maint-0.5/deploy/falcon-operator.yaml'
@@ -57,10 +56,10 @@ def handler_init(model, session, stack_name, token):
 
     physical_resource_id = None
     manifest_file = "/tmp/manifest.yaml"
-    if not proxy_needed(model.ClusterName, session):
-        from . import kubectl
-        kubectl.login(model.ClusterName, session)
-        kubectl.test()
+
+    from . import kubectl
+    kubectl.login(model.ClusterName, session)
+    kubectl.test()
 
     manifest_str = http_get(URL)
     manifests = []
@@ -75,16 +74,6 @@ def handler_init(model, session, stack_name, token):
     return physical_resource_id, manifest_file, manifests
 
 def run_command(command, cluster_name, session):
-    if cluster_name and session:
-        if proxy_needed(cluster_name, session):
-            put_function(session, cluster_name)
-            manifest = None
-            if Path("/tmp/manifest.yaml").is_file():
-                with open("/tmp/manifest.yaml", "r") as fh:
-                    manifest = fh.read()
-            resp = proxy_call(cluster_name, manifest, command, session)
-            log_output(resp)
-            return resp
     retries = 0
     while True:
         try:
