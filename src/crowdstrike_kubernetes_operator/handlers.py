@@ -37,7 +37,7 @@ def create_handler(
     )
 
     LOG.debug(f"Create invoke \n\n{request.__dict__}\n\n{callback_context}")
-    physical_resource_id, _, manifest_list = handler_init(
+    manifest_list = handler_init(
         model, session, request.logicalResourceIdentifier, request.clientRequestToken
     )
     model.CfnId = encode_id(
@@ -108,7 +108,7 @@ def delete_handler(
     if not model.ClusterName:
         raise exceptions.InvalidRequest("ClusterName is required.")
 
-    physical_resource_id, _, manifest_list = handler_init(
+    manifest_list = handler_init(
         model, session, request.logicalResourceIdentifier, request.clientRequestToken
     )
 

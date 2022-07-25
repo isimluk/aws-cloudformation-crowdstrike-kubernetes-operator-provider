@@ -15,32 +15,14 @@ TYPE_NAME = "CrowdStrike::Kubernetes::Operator"
 LOG.setLevel(logging.DEBUG)
 
 
-def build_model(kube_response, model):
-    if len(kube_response) == 1:
-        for key in ["uid", "selfLink", "resourceVersion", "namespace", "name"]:
-            if key in kube_response[0]["metadata"].keys():
-                setattr(
-                    model, key[0].capitalize() + key[1:], kube_response[0]["metadata"][key]
-                )
-
-
 def encode_id(client_token, cluster_name):
     return base64.b64encode(
         f"{client_token}|{cluster_name}".encode("utf-8")
     ).decode("utf-8")
 
 
-def decode_id(encoded_id):
-    return tuple(base64.b64decode(encoded_id).decode("utf-8").split("|"))
-
-
 def handler_init(model, session, stack_name, token):
-    LOG.debug(
-        "Received model: %s" % json.dumps(model._serialize(), default=json_serial)
-    )
-
     physical_resource_id = None
-    manifest_file = "/tmp/manifest.yaml"
 
     from . import kubectl
     kubectl.login(model.ClusterName, session)
@@ -52,11 +34,11 @@ def handler_init(model, session, stack_name, token):
     input_yaml = list(yaml.safe_load_all(manifest_str))
     for manifest in input_yaml:
         if len(input_yaml) == 1:
+            LOG.debug('generate name')
             generate_name(manifest, physical_resource_id, stack_name)
         add_idempotency_token(manifest, token)
         manifests.append(manifest)
-    write_manifest(manifests, manifest_file)
-    return physical_resource_id, manifest_file, manifests
+    return manifests
 
 
 def run_command(command, cluster_name, session):
@@ -82,12 +64,6 @@ def run_command(command, cluster_name, session):
             LOG.debug("{}, retrying in 5 seconds".format(e))
             sleep(5)
             retries += 1
-
-
-def json_serial(o):
-    if isinstance(o, (datetime, date)):
-        return o.strftime("%Y-%m-%dT%H:%M:%SZ")
-    raise TypeError("Object of type '%s' is not JSON serializable" % type(o))
 
 
 def http_get(url):
@@ -122,11 +98,6 @@ def add_idempotency_token(manifest, token):
     if not manifest.get("metadata", {}).get("annotations"):
         manifest["metadata"]["annotations"] = {}
     manifest["metadata"]["annotations"]["cfn-client-token"] = token
-
-
-def write_manifest(manifests, path):
-    with open(path, 'w') as f:
-        yaml.dump_all(manifests, f, default_style='"')
 
 
 def log_output(output):
