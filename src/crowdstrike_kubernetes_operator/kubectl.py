@@ -2,11 +2,13 @@ import logging
 import os
 import re
 import yaml
+import shlex
+import subprocess  # nosec B404
+from time import sleep
 from kubernetes import client, config, utils
 from .utils import run_command
 
 LOG = logging.getLogger(__name__)
-TYPE_NAME = "CrowdStrike::Kubernetes::Operator"
 LOG.setLevel(logging.DEBUG)
 
 
@@ -21,10 +23,40 @@ def login(cluster_name, session=None):
         os.environ["AWS_SESSION_TOKEN"] = creds.token
     run_command(
         f"aws eks update-kubeconfig --name {cluster_name} --alias {cluster_name} --kubeconfig {kubeconfig_location}",
-        None,
-        None,
     )
     config.load_kube_config(config_file=kubeconfig_location)
+
+
+def run_command(command):
+    def log_output(output):
+        # CloudWatch PutEvents has a max length limit (256Kb)
+        # Use slightly smaller value to include supporting information (timestamp, log level, etc.)
+        limit = 260000
+        output_string = f"{output}"  # to support dictionaries as arguments
+        for m in [output_string[i:i+limit] for i in range(0, len(output_string), limit)]:
+            LOG.debug(m)
+    retries = 0
+    while True:
+        try:
+            try:
+                LOG.debug("executing command: %s" % command)
+                output = subprocess.check_output(
+                    shlex.split(command), stderr=subprocess.STDOUT
+                ).decode("utf-8")
+                log_output(output)
+            except subprocess.CalledProcessError as exc:
+                LOG.error(
+                    "Command failed with exit code %s, stderr: %s"
+                    % (exc.returncode, exc.output.decode("utf-8"))
+                )
+                raise Exception(exc.output.decode("utf-8"))
+            return output
+        except Exception as e:
+            if "Unable to connect to the server" not in str(e) or retries >= 5:
+                raise
+            LOG.debug("{}, retrying in 5 seconds".format(e))
+            sleep(5)
+            retries += 1
 
 
 def test():
