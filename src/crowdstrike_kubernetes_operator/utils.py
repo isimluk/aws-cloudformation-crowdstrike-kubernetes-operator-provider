@@ -2,7 +2,7 @@ import base64
 import logging
 import requests
 import shlex
-import subprocess # nosec B404
+import subprocess  # nosec B404
 from ruamel import yaml
 from time import sleep
 
