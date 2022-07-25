@@ -58,6 +58,7 @@ def handler_init(model, session, stack_name, token):
     write_manifest(manifests, manifest_file)
     return physical_resource_id, manifest_file, manifests
 
+
 def run_command(command, cluster_name, session):
     retries = 0
     while True:
