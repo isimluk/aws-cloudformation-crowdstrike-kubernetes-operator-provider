@@ -6,7 +6,6 @@ import shlex
 import subprocess  # nosec B404
 from time import sleep
 from kubernetes import client, config, utils
-from .utils import run_command
 
 LOG = logging.getLogger(__name__)
 LOG.setLevel(logging.DEBUG)
