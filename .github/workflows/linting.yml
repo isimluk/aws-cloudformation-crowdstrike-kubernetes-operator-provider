@@ -24,10 +24,10 @@ jobs:
         python -m pip install -e .[devel]
     - name: Lint with flake8
       run: |
-        flake8 fig
+        flake8 src
     - name: Lint with pylint
       run: |
-        pylint fig
+        pylint src
     - name: Lint with bandit
       run: |
-        bandit  -l -i -r fig
+        bandit  -l -i -r src
