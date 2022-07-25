@@ -1,13 +1,10 @@
 import base64
 import logging
 import json
-import os
-import re
 import requests
 import shlex
 import subprocess
 from datetime import datetime, date
-from cloudformation_cli_python_lib import exceptions
 from ruamel import yaml
 from time import sleep
 from .vpc import proxy_needed, put_function, proxy_call
@@ -32,7 +29,6 @@ def encode_id(client_token, cluster_name):
     return base64.b64encode(
         f"{client_token}|{cluster_name}".encode("utf-8")
     ).decode("utf-8")
-
 
 
 def decode_id(encoded_id):
@@ -162,6 +158,6 @@ def log_output(output):
     # CloudWatch PutEvents has a max length limit (256Kb)
     # Use slightly smaller value to include supporting information (timestamp, log level, etc.)
     limit = 260000
-    output_string = f"{output}" # to support dictionaries as arguments
+    output_string = f"{output}"  # to support dictionaries as arguments
     for m in [output_string[i:i+limit] for i in range(0, len(output_string), limit)]:
         LOG.debug(m)
