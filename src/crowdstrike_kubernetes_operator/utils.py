@@ -153,30 +153,6 @@ def add_idempotency_token(manifest, token):
     manifest["metadata"]["annotations"]["cfn-client-token"] = token
 
 
-def stabilize_job(namespace, name, cluster_name, session):
-    cmd = f"kubectl get job/{name} -o yaml"
-    if namespace:
-        cmd = f"{cmd} -n {namespace}"
-    response = yaml.safe_load_all(
-        run_command(
-            cmd, cluster_name, session
-        )
-    )
-    for resource in response:
-        # check for failures
-        for condition in resource.get("status", {}).get("conditions", []):
-            if condition.get("status") == "True":
-                if condition.get("type") == "Failed":
-                    raise exceptions.NotStabilized(f"Job failed {condition.get('reason')} {condition.get('message')}")
-                if condition.get("type") != "Complete":
-                    return False
-        # check for success
-        if resource.get("status", {}).get("succeeded"):
-            return True
-    # if it has not failed/succeeded, it is still in progress
-    return False
-
-
 def write_manifest(manifests, path):
     with open(path, 'w') as f:
         yaml.dump_all(manifests, f, default_style='"')

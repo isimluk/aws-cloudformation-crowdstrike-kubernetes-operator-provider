@@ -14,7 +14,7 @@ from cloudformation_cli_python_lib import (
 )
 
 from .models import ResourceHandlerRequest, ResourceModel
-from .utils import encode_id, get_model, handler_init, run_command, stabilize_job
+from .utils import encode_id, get_model, handler_init, run_command
 from . import kubectl
 
 # Use this logger to forward log messages to CloudWatch Logs.
