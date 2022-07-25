@@ -4,13 +4,11 @@ from typing import Any, MutableMapping, Optional
 
 from cloudformation_cli_python_lib import (
     Action,
-    HandlerErrorCode,
     OperationStatus,
     ProgressEvent,
     Resource,
     SessionProxy,
     exceptions,
-    identifier_utils,
 )
 
 from .models import ResourceHandlerRequest, ResourceModel
@@ -88,6 +86,7 @@ def update_handler(
     )
     LOG.debug(f"Update invoke \n\n{request.__dict__}\n\n{callback_context}")
     # TODO: put code here
+    _ = progress
     return read_handler(session, request, callback_context)
 
 
