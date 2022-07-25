@@ -33,9 +33,6 @@ def handler_init(model, session, stack_name, token):
 
     input_yaml = list(yaml.safe_load_all(manifest_str))
     for manifest in input_yaml:
-        if len(input_yaml) == 1:
-            LOG.debug('generate name')
-            generate_name(manifest, physical_resource_id, stack_name)
         add_idempotency_token(manifest, token)
         manifests.append(manifest)
     return manifests
@@ -77,19 +74,6 @@ def http_get(url):
             f"{response.reason}"
         )
     return response.text
-
-
-def generate_name(manifest, physical_resource_id, stack_name):
-    if "metadata" in manifest.keys():
-        if (
-            "name" not in manifest["metadata"].keys()
-            and "generateName" not in manifest["metadata"].keys()
-        ):
-            if physical_resource_id:
-                manifest["metadata"]["name"] = physical_resource_id.split("/")[-1]
-            else:
-                manifest["metadata"]["generateName"] = "cfn-%s-" % stack_name.lower()
-    return manifest
 
 
 def add_idempotency_token(manifest, token):
