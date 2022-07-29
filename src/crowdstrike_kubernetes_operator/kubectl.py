@@ -4,6 +4,7 @@ import re
 import yaml
 import shlex
 import subprocess  # nosec B404
+import tempfile
 from time import sleep
 from kubernetes import client, config, utils
 
@@ -12,7 +13,7 @@ LOG.setLevel(logging.DEBUG)
 
 
 def login(cluster_name, session=None):
-    kubeconfig_location = '.kube.config'
+    kubeconfig_location = tempfile.mkdtemp() + '/.kube.config'
     os.environ["PATH"] = f"/var/task/bin:{os.environ['PATH']}"
     os.environ["PYTHONPATH"] = f"/var/task:{os.environ.get('PYTHONPATH', '')}"
     if session:
