@@ -2,7 +2,6 @@ import logging
 import os
 import re
 import yaml
-import shlex
 import subprocess  # nosec B404
 import tempfile
 from time import sleep
@@ -24,12 +23,14 @@ def login(cluster_name, session=None):
     if not re.match("^[A-Za-z0-9_-]+$", cluster_name):
         raise "Invalid cluster name: %s" % cluster_name
     run_command(
-        f"aws eks update-kubeconfig --name {cluster_name} --alias {cluster_name} --kubeconfig {kubeconfig_location}",
+        ["aws", "eks", "update-kubeconfig",
+         "--name", cluster_name, "--alias", cluster_name,
+         "--kubeconfig", kubeconfig_location]
     )
     config.load_kube_config(config_file=kubeconfig_location)
 
 
-def run_command(command):
+def run_command(command_line):
     def log_output(output):
         # CloudWatch PutEvents has a max length limit (256Kb)
         # Use slightly smaller value to include supporting information (timestamp, log level, etc.)
@@ -41,10 +42,8 @@ def run_command(command):
     while True:
         try:
             try:
-                LOG.debug("executing command: %s" % command)
-                output = subprocess.check_output(
-                    shlex.split(command), stderr=subprocess.STDOUT
-                ).decode("utf-8")
+                LOG.debug("executing command: %s" % command_line)
+                output = subprocess.check_output(command_line, shell=False, stderr=subprocess.STDOUT).decode("utf-8")
                 log_output(output)
             except subprocess.CalledProcessError as exc:
                 LOG.error(
