@@ -21,6 +21,8 @@ def login(cluster_name, session=None):
         os.environ["AWS_ACCESS_KEY_ID"] = creds.access_key
         os.environ["AWS_SECRET_ACCESS_KEY"] = creds.secret_key
         os.environ["AWS_SESSION_TOKEN"] = creds.token
+    if not re.match("^[A-Za-z0-9_-]+$", cluster_name):
+        raise "Invalid cluster name: %s" % cluster_name
     run_command(
         f"aws eks update-kubeconfig --name {cluster_name} --alias {cluster_name} --kubeconfig {kubeconfig_location}",
     )
